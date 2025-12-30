@@ -217,6 +217,9 @@ def ensure_output_directory(output_dir: str) -> bool:
 
 def download_media(video_name: str, url: str, output_dir: str, format_code: str, ext: str, retry: int, dry_run: bool) -> bool:
     """Download media from URL using yt-dlp with custom filename."""
+    # Determine if audio-only format
+    is_audio_only = format_code in ["ba", "bestaudio"]
+    
     # Normalize format code
     if format_code in ["ba+bv", "bestaudio+bestvideo"]:
         ytdlp_format = "bestvideo+bestaudio/best"
@@ -228,13 +231,27 @@ def download_media(video_name: str, url: str, output_dir: str, format_code: str,
         ytdlp_format = "best"
     
     # Build yt-dlp command with custom filename
-    output_template = os.path.join(output_dir, f"{video_name}.{ext}")
+    output_template = os.path.join(output_dir, f"{video_name}.%(ext)s")
     cmd = [
         "yt-dlp",
         "-f", ytdlp_format,
-        "--merge-output-format", ext,
-        "-o", output_template,
     ]
+    
+    # For audio-only, use extract-audio and audio-format
+    if is_audio_only:
+        cmd.extend([
+            "--extract-audio",
+            "--audio-format", ext,
+        ])
+    else:
+        # For video formats, use merge-output-format
+        cmd.extend([
+            "--merge-output-format", ext,
+        ])
+    
+    cmd.extend([
+        "-o", output_template,
+    ])
     
     if dry_run:
         cmd.append("--simulate")

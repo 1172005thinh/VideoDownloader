@@ -101,6 +101,7 @@ python downloader.py [OPTIONS]
 | `--ext` | `-e` | Output file extension | `mp4` |
 | `--retry` | `-r` | Number of retry attempts | `3` |
 | `--delay` | `-d` | Delay between downloads (seconds) | `1` |
+| `--num` | `-n` | Download only first N videos | All |
 | `--test` | `-t` | Run tests (url/dep/all) | - |
 | `--dry-run` | | Simulate without downloading | - |
 | `--help` | `-h` | Show help message | - |
@@ -141,6 +142,12 @@ python downloader.py --format ba --ext mp3 --output music/
 
 ```bash
 python downloader.py -i my_urls.txt -o downloads/ -f ba+bv -e mkv -r 5 -d 3
+```
+
+### Download only first 10 videos
+
+```bash
+python downloader.py --num 10
 ```
 
 ### Test URLs before downloading
@@ -222,4 +229,4 @@ MIT License - See [LICENSE](LICENSE) file for details
 
 ## Version
 
-1.0.0
+1.1.0

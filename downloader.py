@@ -2,7 +2,7 @@
 """
 downloader.py - A robust media downloader using yt-dlp and ffmpeg
 
-Version: 1.0.0
+Version: 1.1.0
 Author: 1172005thinh (QuickComp.)
 License: MIT License
 """
@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 
 # Program metadata
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "1172005thinh (QuickComp.)"
 __license__ = """MIT License
 
@@ -40,7 +40,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
-__repository__ = "https"
+__repository__ = "https://github.com/1172005thinh/VideoDownloader"
 
 # Format and extension mappings
 AUDIO_FORMATS = ["ba", "bestaudio"]
@@ -302,17 +302,20 @@ Usage Examples:
 5. Add 3 second delay between downloads:
    python downloader.py --delay 3
 
-6. Test URLs before downloading:
+6. Download only first 10 videos:
+   python downloader.py --num 10
+
+7. Test URLs before downloading:
    python downloader.py --test url
 
-7. Check dependencies:
+8. Check dependencies:
    python downloader.py --test dep
 
-8. Dry run (simulate without downloading):
+9. Dry run (simulate without downloading):
    python downloader.py --dry-run
 
-9. Complete custom configuration:
-   python downloader.py -i urls.txt -o videos/ -f ba+bv -e mp4 -r 5 -d 2
+10. Complete custom configuration:
+    python downloader.py -i urls.txt -o videos/ -f ba+bv -e mp4 -r 5 -d 2 -n 20
 
 Format Options:
 - ba, bestaudio: Best audio only
@@ -346,6 +349,8 @@ def create_argument_parser():
                         help=f'Number of retry attempts (default: {DEFAULT_RETRY})')
     parser.add_argument('-d', '--delay', type=int, default=DEFAULT_DELAY,
                         help=f'Delay in seconds between downloads (default: {DEFAULT_DELAY})')
+    parser.add_argument('-n', '--num', type=int, default=None,
+                        help='Download only first N videos from the list')
     
     # Information arguments
     parser.add_argument('-h', '--help', action='store_true',
@@ -442,6 +447,10 @@ def main():
         print(f"Error: Delay value must be >= 0")
         sys.exit(1)
     
+    if args.num is not None and args.num <= 0:
+        print(f"Error: Number of videos must be > 0")
+        sys.exit(1)
+    
     # Validate format
     valid, msg = validate_format(args.format)
     if not valid:
@@ -466,6 +475,16 @@ def main():
     if not entries:
         print(f"No entries found in {args.input}")
         sys.exit(0)
+    
+    # Limit to first N videos if --num is specified
+    total_entries = len(entries)
+    if args.num is not None:
+        if args.num >= total_entries:
+            print(f"Warning: Requested {args.num} videos but only {total_entries} available. Downloading all.")
+        else:
+            # Get first N entries from dictionary
+            entries = dict(list(entries.items())[:args.num])
+            print(f"Limiting download to first {args.num} of {total_entries} videos")
     
     # Ensure output directory exists
     if not args.dry_run:
